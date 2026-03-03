@@ -1,0 +1,16 @@
+name: "Panorama Gov.BR"
+description: "Dashboard analítico da comunicação governamental brasileira"
+owner:
+  name: "Destaques GovBR"
+  email: "nitaibezerra@gmail.com"
+category: "analytics"
+tags:
+  - "dashboard"
+  - "analytics"
+  - "governo"
+  - "comunicacao"
+keywords: "panorama, governo, agências, temas, sentimento, comunicação"
+icon: "📊"
+version: "0.1.0"
+repository: "https://github.com/destaquesgovbr/streamlit-dgb-analytics"
+documentation: "https://github.com/destaquesgovbr/streamlit-dgb-analytics/blob/main/README.md"
