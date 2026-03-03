@@ -4,17 +4,19 @@ import streamlit as st
 import plotly.express as px
 
 from data.bigquery import get_quality_by_agency_type, get_agency_quality_scatter
+from utils import WIDGET_HELP
 
 st.set_page_config(page_title="Qualidade — Panorama Gov.BR", page_icon="📝", layout="wide")
 st.title("📝 Qualidade da Comunicação")
 
-days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias")
+days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias", help=WIDGET_HELP["periodo"])
 
 # -------------------------------------------------------------------------
 # Readability by agency type
 # -------------------------------------------------------------------------
 
 st.subheader("Legibilidade por tipo de agência")
+st.caption("Distribuição do Índice Flesch (0–100). Quanto maior, mais fácil de ler.")
 df_quality = get_quality_by_agency_type(days)
 if not df_quality.empty:
     fig = px.violin(
@@ -62,6 +64,7 @@ st.divider()
 
 if not df_quality.empty:
     st.subheader("Uso de mídia visual")
+    st.caption("Percentual de artigos com imagem ou vídeo, por tipo de agência.")
     media = df_quality.groupby("agency_type").agg(
         image_rate=("has_image", "mean"),
         video_rate=("has_video", "mean"),

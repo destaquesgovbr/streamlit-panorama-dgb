@@ -11,12 +11,12 @@ from data.bigquery import (
     get_theme_gaps,
     get_theme_evolution,
 )
-from utils import COLORS
+from utils import COLORS, WIDGET_HELP
 
 st.set_page_config(page_title="Temas — Panorama Gov.BR", page_icon="🏷️", layout="wide")
 st.title("🏷️ Panorama Temático")
 
-days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias")
+days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias", help=WIDGET_HELP["periodo"])
 
 # -------------------------------------------------------------------------
 # Sunburst

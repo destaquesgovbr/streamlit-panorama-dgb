@@ -14,7 +14,7 @@ from data.bigquery import (
     get_agency_themes,
     get_benchmarking,
 )
-from utils import DOW_LABELS, SENTIMENT_COLORS, fmt_number
+from utils import DOW_LABELS, METRIC_HELP, SENTIMENT_COLORS, WIDGET_HELP, fmt_number
 
 st.set_page_config(page_title="Agências — Panorama Gov.BR", page_icon="📊", layout="wide")
 st.title("📊 Análise por Agência")
@@ -64,6 +64,7 @@ selected_key = st.selectbox(
     index=default_idx,
     format_func=lambda k: agency_options[k],
     key="agency_selectbox",
+    help=WIDGET_HELP["busca_agencia"],
 )
 
 # Sync: if selectbox changed manually, update session state
@@ -74,7 +75,7 @@ agency_row = df_agencies[df_agencies["agency_key"] == selected_key].iloc[0]
 agency_name = agency_row["agency_name"]
 agency_type = agency_row["agency_type"]
 
-days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias")
+days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias", help=WIDGET_HELP["periodo"])
 
 st.subheader(f"{agency_name}")
 st.caption(f"Tipo: {agency_type or 'N/D'}")
@@ -87,12 +88,12 @@ df_stats = get_agency_stats(selected_key, days)
 if not df_stats.empty:
     s = df_stats.iloc[0]
     cols = st.columns(6)
-    cols[0].metric("Artigos", fmt_number(s["total_articles"]))
-    cols[1].metric("Sentimento", f"{s['avg_sentiment']:.2f}" if pd.notna(s["avg_sentiment"]) else "N/D")
-    cols[2].metric("Palavras/artigo", fmt_number(s["avg_word_count"]) if pd.notna(s["avg_word_count"]) else "N/D")
-    cols[3].metric("Legibilidade", f"{s['avg_readability']:.1f}" if pd.notna(s["avg_readability"]) else "N/D")
-    cols[4].metric("Taxa de imagem", f"{s['image_rate']:.0%}" if pd.notna(s["image_rate"]) else "N/D")
-    cols[5].metric("Taxa de vídeo", f"{s['video_rate']:.0%}" if pd.notna(s["video_rate"]) else "N/D")
+    cols[0].metric("Artigos", fmt_number(s["total_articles"]), help=METRIC_HELP["artigos_agencia"])
+    cols[1].metric("Sentimento", f"{s['avg_sentiment']:.2f}" if pd.notna(s["avg_sentiment"]) else "N/D", help=METRIC_HELP["sentimento_agencia"])
+    cols[2].metric("Palavras/artigo", fmt_number(s["avg_word_count"]) if pd.notna(s["avg_word_count"]) else "N/D", help=METRIC_HELP["palavras_artigo"])
+    cols[3].metric("Legibilidade", f"{s['avg_readability']:.1f}" if pd.notna(s["avg_readability"]) else "N/D", help=METRIC_HELP["legibilidade"])
+    cols[4].metric("Taxa de imagem", f"{s['image_rate']:.0%}" if pd.notna(s["image_rate"]) else "N/D", help=METRIC_HELP["taxa_imagem"])
+    cols[5].metric("Taxa de vídeo", f"{s['video_rate']:.0%}" if pd.notna(s["video_rate"]) else "N/D", help=METRIC_HELP["taxa_video"])
 
 st.divider()
 

@@ -8,12 +8,12 @@ import plotly.express as px
 from streamlit_agraph import agraph, Node, Edge, Config
 
 from data.postgres import get_top_entities, get_entity_timeline, get_entity_cooccurrence, get_entity_nodes
-from utils import COLORS
+from utils import COLORS, WIDGET_HELP
 
 st.set_page_config(page_title="Entidades — Panorama Gov.BR", page_icon="👤", layout="wide")
 st.title("👤 Entidades e Atores")
 
-days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias")
+days = st.sidebar.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias", help=WIDGET_HELP["periodo"])
 
 ENTITY_TYPE_LABELS = {
     "ORG": "Organizações",
@@ -34,6 +34,7 @@ ENTITY_TYPE_COLORS = {
 # -------------------------------------------------------------------------
 
 st.subheader("Top entidades por tipo")
+st.caption("Extraídas automaticamente dos textos por modelo de NER (reconhecimento de entidades nomeadas).")
 
 tabs = st.tabs(list(ENTITY_TYPE_LABELS.values()))
 
@@ -83,6 +84,7 @@ selected_entities = st.multiselect(
     options=available[:40],
     default=available[:3] if len(available) >= 3 else available,
     max_selections=5,
+    help=WIDGET_HELP["selecao_entidades"],
 )
 
 if selected_entities:

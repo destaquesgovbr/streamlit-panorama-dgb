@@ -7,7 +7,7 @@ import streamlit as st
 import plotly.express as px
 
 from data.bigquery import get_kpis, get_theme_hierarchy, get_volume_timeline, get_trending_themes
-from utils import COLORS, fmt_number
+from utils import COLORS, METRIC_HELP, WIDGET_HELP, fmt_number
 
 st.set_page_config(
     page_title="Panorama Gov.BR",
@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 st.title("📊 Panorama Gov.BR")
-st.caption("Análise da comunicação governamental brasileira")
+st.caption("Visão geral da comunicação governamental brasileira — volume, temas e sentimento")
 
 # -------------------------------------------------------------------------
 # Sidebar — Period selector
@@ -27,6 +27,7 @@ days = st.sidebar.selectbox(
     options=[7, 30, 90, 180, 365],
     index=1,
     format_func=lambda d: {7: "7 dias", 30: "30 dias", 90: "3 meses", 180: "6 meses", 365: "1 ano"}[d],
+    help=WIDGET_HELP["periodo_home"],
 )
 
 # -------------------------------------------------------------------------
@@ -41,16 +42,19 @@ if kpis:
         "Artigos publicados",
         fmt_number(kpis["total_articles"]),
         delta=f"{kpis['total_articles'] - kpis['prev_total_articles']:+,}".replace(",", "."),
+        help=METRIC_HELP["artigos_publicados"],
     )
     cols[1].metric(
         "Agências ativas",
         fmt_number(kpis["active_agencies"]),
         delta=int(kpis["active_agencies"] - kpis["prev_active_agencies"]),
+        help=METRIC_HELP["agencias_ativas"],
     )
     cols[2].metric(
         "Temas cobertos",
         fmt_number(kpis["themes_covered"]),
         delta=int(kpis["themes_covered"] - kpis["prev_themes_covered"]),
+        help=METRIC_HELP["temas_cobertos"],
     )
     avg_sent = kpis.get("avg_sentiment") or 0
     prev_sent = kpis.get("prev_avg_sentiment") or 0
@@ -58,6 +62,7 @@ if kpis:
         "Sentimento médio",
         f"{avg_sent:.2f}",
         delta=f"{avg_sent - prev_sent:+.2f}",
+        help=METRIC_HELP["sentimento_medio"],
     )
 
 st.divider()
@@ -97,6 +102,7 @@ with col_trending:
                 row["theme"],
                 f"{int(row['recent_count'])} artigos",
                 delta=delta_str,
+                help=METRIC_HELP["trending_theme"],
             )
 
 st.divider()
@@ -112,6 +118,7 @@ granularity = st.radio(
     ["day", "week", "month"],
     format_func=lambda g: {"day": "Dia", "week": "Semana", "month": "Mês"}[g],
     horizontal=True,
+    help=WIDGET_HELP["granularidade"],
 )
 
 df_timeline = get_volume_timeline(days, granularity)

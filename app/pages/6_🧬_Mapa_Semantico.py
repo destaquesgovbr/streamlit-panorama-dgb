@@ -8,7 +8,7 @@ import streamlit as st
 import plotly.express as px
 
 from data.postgres import get_embeddings_sample, get_similarity_clusters
-from utils import COLORS, fmt_number
+from utils import COLORS, WIDGET_HELP, fmt_number
 
 st.set_page_config(page_title="Mapa Semântico — Panorama Gov.BR", page_icon="🧬", layout="wide")
 st.title("🧬 Mapa Semântico")
@@ -19,8 +19,8 @@ st.caption("Topografia da comunicação governamental — artigos similares fica
 # -------------------------------------------------------------------------
 
 col_params = st.sidebar.container()
-days = col_params.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias")
-sample_size = col_params.slider("Amostra de artigos", 1000, 10000, 5000, step=1000)
+days = col_params.selectbox("Período", [30, 90, 180, 365], index=1, format_func=lambda d: f"{d} dias", help=WIDGET_HELP["periodo"])
+sample_size = col_params.slider("Amostra de artigos", 1000, 10000, 5000, step=1000, help=WIDGET_HELP["amostra_slider"])
 
 # -------------------------------------------------------------------------
 # Load embeddings

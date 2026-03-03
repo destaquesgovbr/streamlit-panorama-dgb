@@ -17,7 +17,7 @@ from data.umami import (
     get_active_visitors,
     get_top_pages,
 )
-from utils import COLORS, fmt_number
+from utils import COLORS, METRIC_HELP, WIDGET_HELP, fmt_number
 
 st.set_page_config(page_title="Engajamento — Panorama Gov.BR", page_icon="📈", layout="wide")
 st.title("📈 Engajamento do Portal")
@@ -29,7 +29,7 @@ if not _is_configured():
     )
     st.stop()
 
-days = st.sidebar.selectbox("Período", [7, 30, 90, 180], index=1, format_func=lambda d: f"{d} dias")
+days = st.sidebar.selectbox("Período", [7, 30, 90, 180], index=1, format_func=lambda d: f"{d} dias", help=WIDGET_HELP["periodo"])
 
 # -------------------------------------------------------------------------
 # KPIs de tráfego
@@ -41,7 +41,7 @@ if current:
     cols = st.columns(5)
 
     active = get_active_visitors()
-    cols[0].metric("Agora online", fmt_number(active))
+    cols[0].metric("Agora online", fmt_number(active), help=METRIC_HELP["agora_online"])
 
     def _stat(data, key):
         v = data.get(key, 0)
@@ -49,19 +49,19 @@ if current:
 
     pv = _stat(current, "pageviews")
     pv_prev = _stat(prev, "pageviews")
-    cols[1].metric("Pageviews", fmt_number(pv), delta=fmt_number(pv - pv_prev) if pv_prev else None)
+    cols[1].metric("Pageviews", fmt_number(pv), delta=fmt_number(pv - pv_prev) if pv_prev else None, help=METRIC_HELP["pageviews"])
 
     visitors = _stat(current, "visitors")
     vis_prev = _stat(prev, "visitors")
-    cols[2].metric("Visitantes", fmt_number(visitors), delta=fmt_number(visitors - vis_prev) if vis_prev else None)
+    cols[2].metric("Visitantes", fmt_number(visitors), delta=fmt_number(visitors - vis_prev) if vis_prev else None, help=METRIC_HELP["visitantes"])
 
     visits = _stat(current, "visits")
     vis2_prev = _stat(prev, "visits")
-    cols[3].metric("Sessões", fmt_number(visits), delta=fmt_number(visits - vis2_prev) if vis2_prev else None)
+    cols[3].metric("Sessões", fmt_number(visits), delta=fmt_number(visits - vis2_prev) if vis2_prev else None, help=METRIC_HELP["sessoes"])
 
     bounces = _stat(current, "bounces")
     bounce_rate = round(bounces / visits * 100, 1) if visits > 0 else 0
-    cols[4].metric("Bounce rate", f"{bounce_rate}%")
+    cols[4].metric("Bounce rate", f"{bounce_rate}%", help=METRIC_HELP["bounce_rate"])
 
 st.divider()
 
