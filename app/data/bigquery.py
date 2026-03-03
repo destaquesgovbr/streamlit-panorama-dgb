@@ -290,6 +290,91 @@ def get_benchmarking(agency_type: str, days: int = 30, top_n: int = 15) -> pd.Da
 
 
 @st.cache_data(ttl=3600)
+def get_sankey_agency_theme(days: int = 90, top_agencies: int = 10, top_themes: int = 10) -> pd.DataFrame:
+    """Agency → Theme L1 flows for Sankey diagram."""
+    sql = f"""
+    WITH top_ag AS (
+        SELECT agency_name FROM `{PROJECT_ID}.{DATASET}.fato_noticias`
+        WHERE published_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL {days} DAY)
+        GROUP BY agency_name ORDER BY COUNT(*) DESC LIMIT {top_agencies}
+    ),
+    top_th AS (
+        SELECT COALESCE(theme_l1_label, 'Sem tema') AS theme
+        FROM `{PROJECT_ID}.{DATASET}.fato_noticias`
+        WHERE published_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL {days} DAY)
+        GROUP BY theme ORDER BY COUNT(*) DESC LIMIT {top_themes}
+    )
+    SELECT
+        f.agency_name AS source,
+        COALESCE(f.theme_l1_label, 'Sem tema') AS target,
+        COUNT(*) AS value
+    FROM `{PROJECT_ID}.{DATASET}.fato_noticias` f
+    WHERE f.published_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL {days} DAY)
+      AND f.agency_name IN (SELECT agency_name FROM top_ag)
+      AND COALESCE(f.theme_l1_label, 'Sem tema') IN (SELECT theme FROM top_th)
+    GROUP BY source, target
+    ORDER BY value DESC
+    """
+    return _query(sql)
+
+
+@st.cache_data(ttl=3600)
+def get_theme_gaps(days: int = 90) -> pd.DataFrame:
+    """Theme coverage vs average — identifies over/under-represented themes."""
+    sql = f"""
+    WITH theme_counts AS (
+        SELECT
+            COALESCE(theme_l1_label, 'Sem tema') AS theme,
+            COUNT(*) AS article_count
+        FROM `{PROJECT_ID}.{DATASET}.fato_noticias`
+        WHERE published_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL {days} DAY)
+        GROUP BY theme
+    ),
+    stats AS (
+        SELECT AVG(article_count) AS avg_count FROM theme_counts
+    )
+    SELECT
+        t.theme,
+        t.article_count,
+        s.avg_count,
+        t.article_count - s.avg_count AS deviation,
+        ROUND((t.article_count - s.avg_count) / s.avg_count * 100, 1) AS deviation_pct
+    FROM theme_counts t, stats s
+    ORDER BY deviation
+    """
+    return _query(sql)
+
+
+@st.cache_data(ttl=3600)
+def get_theme_evolution(days: int = 180) -> pd.DataFrame:
+    """Weekly theme ranking over time for bump chart."""
+    sql = f"""
+    WITH weekly AS (
+        SELECT
+            TIMESTAMP_TRUNC(published_at, WEEK) AS week,
+            COALESCE(theme_l1_label, 'Sem tema') AS theme,
+            COUNT(*) AS article_count
+        FROM `{PROJECT_ID}.{DATASET}.fato_noticias`
+        WHERE published_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL {days} DAY)
+        GROUP BY week, theme
+    ),
+    ranked AS (
+        SELECT
+            week,
+            theme,
+            article_count,
+            ROW_NUMBER() OVER (PARTITION BY week ORDER BY article_count DESC) AS rank
+        FROM weekly
+    )
+    SELECT week, theme, article_count, rank
+    FROM ranked
+    WHERE rank <= 10
+    ORDER BY week, rank
+    """
+    return _query(sql)
+
+
+@st.cache_data(ttl=3600)
 def get_agency_theme_matrix(days: int = 30) -> pd.DataFrame:
     """Agency x Theme L1 matrix for heatmap."""
     sql = f"""

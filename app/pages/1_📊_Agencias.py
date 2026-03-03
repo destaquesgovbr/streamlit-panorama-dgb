@@ -20,17 +20,55 @@ st.set_page_config(page_title="Agências — Panorama Gov.BR", page_icon="📊",
 st.title("📊 Análise por Agência")
 
 # -------------------------------------------------------------------------
-# Agency selector
+# Agency selector with search + quick links
 # -------------------------------------------------------------------------
+
+DEFAULT_AGENCY = "gestao"
+
+TOP_MINISTERIOS = [
+    ("gestao", "Gestão e Inovação"),
+    ("saude", "Saúde"),
+    ("mec", "Educação"),
+    ("fazenda", "Fazenda"),
+    ("defesa", "Defesa"),
+    ("mj", "Justiça"),
+    ("mds", "Desenv. Social"),
+    ("mdic", "Desenv. e Indústria"),
+    ("mcti", "Ciência e Tecnologia"),
+    ("trabalho-e-emprego", "Trabalho"),
+]
 
 df_agencies = get_agencies()
 agency_options = df_agencies[["agency_key", "agency_name"]].set_index("agency_key")["agency_name"].to_dict()
 
+# Quick links in 2 rows of 5
+st.caption("Acesso rápido — Ministérios:")
+for row_start in (0, 5):
+    row_items = TOP_MINISTERIOS[row_start:row_start + 5]
+    quick_cols = st.columns(5)
+    for col, (key, short_name) in zip(quick_cols, row_items):
+        if col.button(short_name, key=f"quick_{key}", use_container_width=True):
+            st.session_state["selected_agency"] = key
+
+# Initialize default
+if "selected_agency" not in st.session_state:
+    st.session_state["selected_agency"] = DEFAULT_AGENCY
+
+# Searchable selectbox
+all_keys = list(agency_options.keys())
+default_idx = all_keys.index(st.session_state["selected_agency"]) if st.session_state["selected_agency"] in all_keys else 0
+
 selected_key = st.selectbox(
-    "Selecione uma agência",
-    options=list(agency_options.keys()),
+    "Ou busque pelo nome",
+    options=all_keys,
+    index=default_idx,
     format_func=lambda k: agency_options[k],
+    key="agency_selectbox",
 )
+
+# Sync: if selectbox changed manually, update session state
+if selected_key != st.session_state.get("selected_agency"):
+    st.session_state["selected_agency"] = selected_key
 
 agency_row = df_agencies[df_agencies["agency_key"] == selected_key].iloc[0]
 agency_name = agency_row["agency_name"]

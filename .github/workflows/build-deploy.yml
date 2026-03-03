@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: inspire-7-finep
   REGION: southamerica-east1
-  APP_NAME: dgb-analytics
+  APP_NAME: panorama-dgb
   REGISTRY: southamerica-east1-docker.pkg.dev
   REPOSITORY: destaquesgovbr-streamlit
 

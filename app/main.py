@@ -52,10 +52,12 @@ if kpis:
         fmt_number(kpis["themes_covered"]),
         delta=int(kpis["themes_covered"] - kpis["prev_themes_covered"]),
     )
+    avg_sent = kpis.get("avg_sentiment") or 0
+    prev_sent = kpis.get("prev_avg_sentiment") or 0
     cols[3].metric(
         "Sentimento médio",
-        f"{kpis['avg_sentiment']:.2f}",
-        delta=f"{kpis['avg_sentiment'] - kpis['prev_avg_sentiment']:+.2f}",
+        f"{avg_sent:.2f}",
+        delta=f"{avg_sent - prev_sent:+.2f}",
     )
 
 st.divider()
