@@ -43,19 +43,23 @@ if current:
     active = get_active_visitors()
     cols[0].metric("Agora online", fmt_number(active))
 
-    pv = current.get("pageviews", {}).get("value", 0)
-    pv_prev = prev.get("pageviews", {}).get("value", 0)
+    def _stat(data, key):
+        v = data.get(key, 0)
+        return v.get("value", 0) if isinstance(v, dict) else (v or 0)
+
+    pv = _stat(current, "pageviews")
+    pv_prev = _stat(prev, "pageviews")
     cols[1].metric("Pageviews", fmt_number(pv), delta=fmt_number(pv - pv_prev) if pv_prev else None)
 
-    visitors = current.get("visitors", {}).get("value", 0)
-    vis_prev = prev.get("visitors", {}).get("value", 0)
+    visitors = _stat(current, "visitors")
+    vis_prev = _stat(prev, "visitors")
     cols[2].metric("Visitantes", fmt_number(visitors), delta=fmt_number(visitors - vis_prev) if vis_prev else None)
 
-    visits = current.get("visits", {}).get("value", 0)
-    vis2_prev = prev.get("visits", {}).get("value", 0)
+    visits = _stat(current, "visits")
+    vis2_prev = _stat(prev, "visits")
     cols[3].metric("Sessões", fmt_number(visits), delta=fmt_number(visits - vis2_prev) if vis2_prev else None)
 
-    bounces = current.get("bounces", {}).get("value", 0)
+    bounces = _stat(current, "bounces")
     bounce_rate = round(bounces / visits * 100, 1) if visits > 0 else 0
     cols[4].metric("Bounce rate", f"{bounce_rate}%")
 
