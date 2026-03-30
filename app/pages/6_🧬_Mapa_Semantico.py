@@ -44,15 +44,17 @@ st.info(f"{fmt_number(len(embeddings))} artigos carregados. Projetando em 2D com
 
 
 @st.cache_data(ttl=3600)
-def compute_umap(_embeddings, n_neighbors: int = 15, min_dist: float = 0.1):
-    """Compute UMAP 2D projection. Underscore prefix excludes from hashing."""
+def compute_umap(_embeddings, n_samples: int, n_neighbors: int = 15, min_dist: float = 0.1):
+    """Compute UMAP 2D projection. Underscore prefix excludes from hashing.
+    n_samples is used as a cache key so different sample sizes get different projections.
+    """
     from umap import UMAP
     reducer = UMAP(n_components=2, n_neighbors=n_neighbors, min_dist=min_dist, random_state=42, metric="cosine")
     return reducer.fit_transform(_embeddings)
 
 
 with st.spinner("Calculando projeção UMAP (pode levar alguns segundos)..."):
-    coords = compute_umap(embeddings)
+    coords = compute_umap(embeddings, len(embeddings))
 
 metadata = metadata.copy()
 metadata["x"] = coords[:, 0]
